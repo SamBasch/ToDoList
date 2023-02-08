@@ -39,12 +39,14 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
-                @foreach(Accessory accessory in item.Accessories)
+            <td> 
+               @foreach(Accessory accessory in item.Accessories)
                 {
-                    <td>
-                        <span>@accessory.Name</span>
-                    </td>
-                };
+                   
+                        <p>@accessory.Name</p>
+               
+                }</td>
+
 
             <td>
                 @Html.DisplayFor(modelItem => item.DateCreated)
