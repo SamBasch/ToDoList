@@ -39,10 +39,12 @@ namespace ToDoList.Controllers
 
             List<Accessory> accessories = await _context.Accessories.Where(a => a.AppUserId == userId).ToListAsync();
 
+            
+
             if (accessoryId == null)
             {
 
-                tdItems = await _context.ToDoItems.Where(t => t.AppUserId == userId).Include(t => t.Accessories).ToListAsync();
+                tdItems = await _context.ToDoItems.Where(t => t.AppUserId == userId && t.Completed == false).Include(t => t.Accessories).ToListAsync();
 
 
             }
@@ -59,6 +61,43 @@ namespace ToDoList.Controllers
 
             return View(tdItems);
         }
+
+
+
+        public async Task<IActionResult> Completed(int? accessoryId)
+        {
+
+
+            string? userId = _userManager.GetUserId(User)!;
+
+            IEnumerable<ToDoItem> tdItems = await _context.ToDoItems.Where(t => t.AppUserId == userId).Include(t => t.Accessories).ToListAsync();
+
+            List<Accessory> accessories = await _context.Accessories.Where(a => a.AppUserId == userId).ToListAsync();
+
+
+
+            if (accessoryId == null)
+            {
+
+                tdItems = await _context.ToDoItems.Where(t => t.AppUserId == userId && t.Completed == true).Include(t => t.Accessories).ToListAsync();
+
+
+            }
+            else
+            {
+                tdItems = (await _context.Accessories.Include(a => a.ToDoItems).FirstOrDefaultAsync(a => a.AppUserId == userId && a.Id == accessoryId))!.ToDoItems.ToList();
+            }
+
+
+            ViewData["PersonList"] = new SelectList(accessories, "Id", "Name", accessoryId);
+
+
+            //var applicationDbContext = _context.ToDoItems.Include(t => t.AppUser);
+
+            return View(tdItems);
+
+        }
+
 
         // GET: ToDoItems/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -78,6 +117,9 @@ namespace ToDoList.Controllers
 
             return View(toDoItem);
         }
+
+
+
 
         // GET: ToDoItems/Create
         public async Task<IActionResult>  Create()
@@ -190,11 +232,10 @@ namespace ToDoList.Controllers
                         toDoItem.DueDate = DateTime.SpecifyKind(toDoItem.DueDate.Value, DateTimeKind.Utc);
                     }
 
-                    if (toDoItem.DueDate != null)
-                    {
+       
 
-                        toDoItem.DateCreated = DateTime.SpecifyKind(toDoItem.DateCreated, DateTimeKind.Utc);
-                    }
+                     toDoItem.DateCreated = DateTime.SpecifyKind(toDoItem.DateCreated, DateTimeKind.Utc);
+                
 
                     _context.Update(toDoItem);
                     await _context.SaveChangesAsync();
